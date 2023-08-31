@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - trunk
+    tags:
+      - '*'
+        
+env:
+  CR_URL: kimiversen.azurecr.io
+  CR_USERNAME: kimiversen
+
+jobs:
+  build-image:
+    # Development builds
+    if: github.ref_name == 'trunk'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Log in to ACR
+        run: docker login ${{ env.CR_URL }} -u ${{ env.CR_USERNAME }} -p ${{ secrets.CR_PASSWORD }}
+
+      - name: Build image
+        run: docker pull alpine:latest
+
+      - name: Tag image
+        run: docker tag alpine:latest ${{ env.CR_URL }}/alpine:${{ github.sha }}
+
+      - name: Push image
+        run: docker push 
+
