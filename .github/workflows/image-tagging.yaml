@@ -5,7 +5,7 @@ on:
     branches:
       - trunk
     tags:
-      - '*'
+      - '*.*.*'
         
 env:
   CR_URL: kimiversen.azurecr.io
@@ -18,9 +18,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
       - name: Log in to ACR
         run: docker login ${{ env.CR_URL }} -u ${{ env.CR_USERNAME }} -p ${{ secrets.CR_PASSWORD }}
 
@@ -32,4 +29,19 @@ jobs:
 
       - name: Push image
         run: docker push ${{ env.CR_URL }}/alpine:${{ github.sha }}
+
+  retag-for-production:
+    if: github.ref_type == 'tag'
+    steps:
+      - name: Log in to ACR
+        run: docker login ${{ env.CR_URL }} -u ${{ env.CR_USERNAME }} -p ${{ secrets.CR_PASSWORD }}
+
+      - name: Pull image
+        run: docker pull ${{ env.CR_URL }}/alpine:${{ github.sha }}
+
+      - name: Tag image for production
+        run: docker tag ${{ env.CR_URL }}/alpine:${{ github.sha }} ${{ env.CR_URL }}/alpine:${{ github.ref_name }}
+
+      - name: Push image
+        run: docker push ${{ env.CRL_URL }}/alpine:${{ github.ref_name }}
 
