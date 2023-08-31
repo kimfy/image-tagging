@@ -15,6 +15,8 @@ jobs:
   build-image:
     if: github.ref_name == 'trunk'
     runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME_FULL: kimiversen.azurecr.io/alpine:${{ github.sha }}
 
     steps:
       - name: Log in to ACR
@@ -24,25 +26,28 @@ jobs:
         run: docker pull alpine:latest
 
       - name: Tag image
-        run: docker tag alpine:latest ${{ env.CR_URL }}/alpine:${{ github.sha }}
+        run: docker tag alpine:latest ${{ env.IMAGE_NAME_FULL }}
 
       - name: Push image
-        run: docker push ${{ env.CR_URL }}/alpine:${{ github.sha }}
+        run: docker push ${{ env.IMAGE_NAME_FULL }}
 
   retag-for-production:
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME_OLD: kimiversen.azurecr.io/alpine:${{ github.sha }}
+      IMAGE_NAME_FULL: kimiversen.azurecr.io/alpine:${{ github.ref_name }}
 
     steps:
       - name: Log in to ACR
         run: docker login ${{ env.CR_URL }} -u ${{ env.CR_USERNAME }} -p ${{ secrets.CR_PASSWORD }}
 
       - name: Pull image
-        run: docker pull ${{ env.CR_URL }}/alpine:${{ github.sha }}
+        run: docker pull ${{ env.IMAGE_NAME_OLD }}
 
       - name: Tag image for production
-        run: docker tag ${{ env.CR_URL }}/alpine:${{ github.sha }} ${{ env.CR_URL }}/alpine:${{ github.ref_name }}
+        run: docker tag ${{ env.IMAGE_NAME_OLD }} ${{ env.IMAGE_NAME_FULL }}
 
       - name: Push image
-        run: docker push ${{ env.CR_URL }}/alpine:${{ github.ref_name }}
+        run: docker push ${{ env.IMAGE_NAME_FULL }}
 
