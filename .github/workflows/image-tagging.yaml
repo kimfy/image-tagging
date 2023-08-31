@@ -44,5 +44,5 @@ jobs:
         run: docker tag ${{ env.CR_URL }}/alpine:${{ github.sha }} ${{ env.CR_URL }}/alpine:${{ github.ref_name }}
 
       - name: Push image
-        run: docker push ${{ env.CRL_URL }}/alpine:${{ github.ref_name }}
+        run: docker push ${{ env.CR_URL }}/alpine:${{ github.ref_name }}
 
